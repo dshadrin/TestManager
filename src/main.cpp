@@ -1,5 +1,5 @@
 #include "StdInc.h"
-// #include "logviewqt.h"
+#include "TestManager.h"
 #include <QApplication>
 #include <QSettings>
 #include "DatabaseDef.h"
@@ -19,8 +19,7 @@ int main(int argc, char *argv[])
     DB = Database::open(EDBType::PostgreSQL);
 
     QApplication a(argc, argv);
-// 	QString fname = argc > 1 ? argv[1] : "";
-// 	LogViewQt w(fname);
-//     w.show();
+    TestManager w;
+    w.show();
     return a.exec();
 }

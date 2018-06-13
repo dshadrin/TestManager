@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.11)
 
-set(PROJECT_NAME "TestManager")
+include(config.cmake)
 project(${PROJECT_NAME} LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 14)
 
@@ -65,19 +65,24 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt5 COMPONENTS Gui Core Widgets REQUIRED)
 
 set(SOURCES
-  main.cpp
-  DatabaseDef.cpp
+  src/main.cpp
+  src/DatabaseDef.cpp
+  src/${PROJECT_NAME}.cpp
 )
 
 set(HEADERS
-	StdInc.h
-	DatabaseDef.h
+	inc/StdInc.h
+	inc/DatabaseDef.h
+  inc/${PROJECT_NAME}.h
 )
+include_directories(${CMAKE_SOURCE_DIR}/inc)
 
 set(RESOURCES
+  res/${PROJECT_NAME}.qrc
 )
 
 set(FORMS
+  ui/${PROJECT_NAME}.ui
 )
 
 qt5_add_resources(RESOURCES_R ${RESOURCES})
@@ -86,8 +91,6 @@ qt5_wrap_ui(FORM_H ${FORMS})
 ###
 # App configuration
 ###
-set(DestinationDir ${CMAKE_SOURCE_DIR}/dist)
-message(STATUS "DestinationDir: ${DestinationDir}")
 add_executable(${PROJECT_NAME} WIN32 ${SOURCES} ${HEADERS} ${FORM_H} ${RESOURCES_R})
 target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Gui Qt5::Widgets ${Boost_LIBRARIES} ${PostgreSQL_LIBRARIES})
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${DestinationDir})
