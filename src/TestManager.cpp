@@ -26,6 +26,10 @@ TestManager::TestManager( QWidget *parent)
         connect(checkDbTimer, SIGNAL(timeout()), this, SLOT(tickDbTimer()));
         checkDbTimer->start();
     }
+    else
+    {
+        DB->checkDbStructure();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -85,5 +89,9 @@ void TestManager::tickDbTimer()
     if (DB->status() != Database::EDbConnStatus::ok)
     {
         this->close();
+    }
+    else
+    {
+        DB->checkDbStructure();
     }
 }

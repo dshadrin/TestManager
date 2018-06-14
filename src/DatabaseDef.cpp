@@ -6,6 +6,11 @@
 #include <QSettings>
 #include <QMessageBox>
 
+extern "C"
+{
+    int IsEntityExists(const char * kind, const char * name);
+}
+
 //////////////////////////////////////////////////////////////////////////
 extern QString confName;
 extern const QString URL_KEY;
@@ -89,6 +94,19 @@ public:
         {
             status = (PQstatus(m_connection) == CONNECTION_OK) ? EDbConnStatus::ok : EDbConnStatus::bad;
         }
+        return status;
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    virtual bool checkDbStructure() override
+    {
+        bool status = false;
+
+//  https://postgrespro.ru/docs/postgresql/9.6/ecpg
+//  https://postgrespro.ru/docs/postgresql/9.6/catalog-pg-class.html
+        int check = IsEntityExists("S", "revisionSec");
+        check = IsEntityExists("r", "version");
+
         return status;
     }
 

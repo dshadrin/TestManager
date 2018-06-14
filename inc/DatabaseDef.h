@@ -43,17 +43,18 @@ public:
 
 public:
     Database()
-        : tTest(schema::table_test())
-        , tVersion(schema::table_version())
+        : defaultTestRecord(schema::table_test(0, 0, ""))
+        , defaultVersionRecord(schema::table_version(0, "", "", false))
     {}
     virtual ~Database() = default;
 
     virtual bool open() = 0;
     virtual EDbConnStatus status() = 0;
+    virtual bool checkDbStructure() = 0;
 
     static DBPtr create(EDBType dbtype);
 
 private:
-    schema::table_version tVersion;
-    schema::table_test tTest;
+    const schema::table_version defaultVersionRecord;
+    const schema::table_test defaultTestRecord;
 };

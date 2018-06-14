@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.11)
 
 include(config.cmake)
-project(${PROJECT_NAME} LANGUAGES CXX)
+project(${PROJECT_NAME} LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 14)
 
 ###
@@ -34,10 +34,17 @@ message(STATUS "Boost LIBRARIES: ${Boost_LIBRARIES}")
 ###
 # SQL configuration
 ###
-find_package(PostgreSQL QUIET REQUIRED)
+find_package(PostgreSQL REQUIRED)
 message(STATUS "PostgreSQL INCLUDE: ${PostgreSQL_INCLUDE_DIRS}")
 message(STATUS "PostgreSQL LIBRARIES: ${PostgreSQL_LIBRARIES}")
 include_directories(${PostgreSQL_INCLUDE_DIRS})
+
+if(MSVC)
+set(ECPQ_LIB $ENV{PostgreSQL_ROOT}/lib/libecpg.lib)
+list(APPEND PostgreSQL_LIBRARIES ${ECPQ_LIB})
+endif()
+
+message(STATUS "PostgreSQL LIBRARIES: ${PostgreSQL_LIBRARIES}")
 
 ###
 # Qt configuration
@@ -69,11 +76,12 @@ set(SOURCES
   src/DatabaseDef.cpp
   src/${PROJECT_NAME}.cpp
   src/Connection.cpp
+  pgc/CheckDbStructure.c
 )
 
 set(HEADERS
-	inc/StdInc.h
-	inc/DatabaseDef.h
+  inc/StdInc.h
+  inc/DatabaseDef.h
   inc/${PROJECT_NAME}.h
   inc/Connection.h
 )

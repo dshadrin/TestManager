@@ -1,0 +1,16 @@
+// Check and create DB structure
+
+int IsEntityExists(const char * kind, const char * name)
+{
+    EXEC SQL BEGIN DECLARE SECTION;
+    const char * rel_name = name;
+    const char * rel_kind = kind;
+    int result = 0;
+    EXEC SQL END DECLARE SECTION;
+
+    EXEC SQL PREPARE stmt FROM "SELECT count(*) FROM pg_catalog.pg_class WHERE relkind = ? AND relname = ? AND pg_catalog.pg_table_is_visible(oid)";
+    EXEC SQL EXECUTE stmt INTO :result USING :rel_kind, :rel_name;
+    EXEC SQL DEALLOCATE PREPARE stmt;
+
+    return result;
+}
