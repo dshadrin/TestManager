@@ -2,8 +2,17 @@
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 #include <libpq-fe.h>
-#include <QDebug>
 #include <sstream>
+#include <QSettings>
+#include <QMessageBox>
+
+//////////////////////////////////////////////////////////////////////////
+extern QString confName;
+extern const QString URL_KEY;
+extern const QString DB_KEY;
+extern const QString LOGIN_KEY;
+extern const QString PWD_KEY;
+extern const QString SQLITE_KEY;
 
 //////////////////////////////////////////////////////////////////////////
 // PostgreSQL implementation
@@ -11,40 +20,58 @@
 class PostgreSQLdb : public Database
 {
 public:
+    //////////////////////////////////////////////////////////////////////////
     PostgreSQLdb() : m_connection(nullptr)
     {
-        bool status = open("etf", "etf");
-        if (!status)
-        {
-            throw std::runtime_error("Cannot open PostgreSQL connection.");
-        }
+        QSettings settings(confName, QSettings::IniFormat, Q_NULLPTR);
+        url = settings.value(URL_KEY).toString();
+        dbName = settings.value(DB_KEY).toString();
+        login = settings.value(LOGIN_KEY).toString();
+        pass = settings.value(PWD_KEY).toString();
+
+        open();
     }
 
+    //////////////////////////////////////////////////////////////////////////
     virtual ~PostgreSQLdb()
     {
         close();
     }
 
-    bool open(const std::string& login, const std::string& pwd, const std::string& dbname = "etf", const std::string& url = "localhost")
+    //////////////////////////////////////////////////////////////////////////
+    virtual bool open() override
     {
-        std::ostringstream ss;
-        ss << "user=" << login << " password =" << pwd << " dbname=" << dbname;
-        m_connection = PQconnectdb(ss.str().c_str());
-
-        if (PQstatus(m_connection) == CONNECTION_BAD) {
-
-            qDebug() << QString("Connection to database failed: %1").arg(PQerrorMessage(m_connection));
-            close();
-            return false;
-        }
-        else
+        bool status = false;
+        try
         {
-            int ver = PQserverVersion(m_connection);
-            qDebug() << QString("Server version: %1").arg(ver);
-            return true;
+            std::ostringstream ss;
+            ss << "user=" << login.toStdString() << " password =" << pass.toStdString() << " dbname=" << dbName.toStdString() << " host=" << url.toStdString();
+
+            if (url.isEmpty() || dbName.isEmpty() || login.isEmpty() || pass.isEmpty())
+            {
+                throw std::runtime_error("Incorrect connection info: " + ss.str());
+            }
+
+            m_connection = PQconnectdb(ss.str().c_str());
+
+            if (PQstatus(m_connection) == CONNECTION_OK)
+            {
+                status = true;
+            }
+            else
+            {
+                throw std::runtime_error(QString("Connection to database failed: %1").arg(PQerrorMessage(m_connection)).toStdString());
+            }
         }
+        catch (std::exception& e)
+        {
+            close();
+            QMessageBox::critical(Q_NULLPTR, QString("Test connection"), QString("Connection fail (%1)").arg(e.what()));
+        }
+        return status;
     }
 
+    //////////////////////////////////////////////////////////////////////////
     void close()
     {
         if (m_connection)
@@ -54,8 +81,24 @@ public:
         }
     }
 
+    //////////////////////////////////////////////////////////////////////////
+    virtual EDbConnStatus status() override
+    {
+        EDbConnStatus status = EDbConnStatus::bad;
+        if (m_connection != Q_NULLPTR)
+        {
+            status = (PQstatus(m_connection) == CONNECTION_OK) ? EDbConnStatus::ok : EDbConnStatus::bad;
+        }
+        return status;
+    }
+
 private:
     PGconn * m_connection;
+    QSettings settings;
+    QString url;
+    QString dbName;
+    QString login;
+    QString pass;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -67,7 +110,7 @@ private:
 // Common implementation
 //////////////////////////////////////////////////////////////////////////
 
-DBPtr Database::open(EDBType dbtype)
+DBPtr Database::create(EDBType dbtype)
 {
     switch (dbtype)
     {

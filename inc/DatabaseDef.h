@@ -31,10 +31,16 @@ BOOST_FUSION_DEFINE_STRUCT(
 (std::string, name)
 )
 
-
 //////////////////////////////////////////////////////////////////////////
 class Database
 {
+public:
+    enum class EDbConnStatus : uint8_t
+    {
+        ok,
+        bad
+    };
+
 public:
     Database()
         : tTest(schema::table_test())
@@ -42,7 +48,10 @@ public:
     {}
     virtual ~Database() = default;
 
-    static DBPtr open(EDBType dbtype);
+    virtual bool open() = 0;
+    virtual EDbConnStatus status() = 0;
+
+    static DBPtr create(EDBType dbtype);
 
 private:
     schema::table_version tVersion;

@@ -68,12 +68,14 @@ set(SOURCES
   src/main.cpp
   src/DatabaseDef.cpp
   src/${PROJECT_NAME}.cpp
+  src/Connection.cpp
 )
 
 set(HEADERS
 	inc/StdInc.h
 	inc/DatabaseDef.h
   inc/${PROJECT_NAME}.h
+  inc/Connection.h
 )
 include_directories(${CMAKE_SOURCE_DIR}/inc)
 
@@ -83,6 +85,7 @@ set(RESOURCES
 
 set(FORMS
   ui/${PROJECT_NAME}.ui
+  ui/Connection.ui
 )
 
 qt5_add_resources(RESOURCES_R ${RESOURCES})

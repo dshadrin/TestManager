@@ -1,25 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>TestManager</class>
- <widget class="QWidget" name="TestManager">
+ <widget class="QMainWindow" name="TestManager">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>892</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Test manager</string>
+   <string>MainWindow</string>
   </property>
-  <property name="windowIcon">
-   <iconset resource="../res/TestManager.qrc">
-    <normaloff>:/common/development.png</normaloff>:/common/development.png</iconset>
-  </property>
+  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>892</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionConnection"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <addaction name="menuFile"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionConnection">
+   <property name="icon">
+    <iconset resource="../res/TestManager.qrc">
+     <normaloff>:/common/connection.png</normaloff>:/common/connection.png</iconset>
+   </property>
+   <property name="text">
+    <string>Connection...</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="../res/TestManager.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>actionExit</sender>
+   <signal>triggered()</signal>
+   <receiver>TestManager</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>445</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

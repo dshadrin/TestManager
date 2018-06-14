@@ -1,5 +1,12 @@
 <RCC>
   <qresource prefix="common">
+    <file>quit.png</file>
+    <file>connection.png</file>
     <file>development.png</file>
+  </qresource>
+  <qresource prefix="edit">
+    <file>apply.png</file>
+    <file>binoculars.png</file>
+    <file>undo.png</file>
   </qresource>
 </RCC>
