@@ -5,11 +5,7 @@
 #include <sstream>
 #include <QSettings>
 #include <QMessageBox>
-
-extern "C"
-{
-    int IsEntityExists(const char * kind, const char * name);
-}
+#include "CheckDbStructure.h"
 
 //////////////////////////////////////////////////////////////////////////
 extern QString confName;
