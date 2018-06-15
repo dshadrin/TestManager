@@ -16,6 +16,39 @@ extern const QString PWD_KEY;
 extern const QString SQLITE_KEY;
 
 //////////////////////////////////////////////////////////////////////////
+namespace
+{
+    struct SQStingConnectionData
+    {
+        SQStingConnectionData()
+        {
+            QSettings settings(confName, QSettings::IniFormat, Q_NULLPTR);
+            url = settings.value(URL_KEY).toString();
+            dbName = settings.value(DB_KEY).toString();
+            login = settings.value(LOGIN_KEY).toString();
+            pass = settings.value(PWD_KEY).toString();
+        }
+        QString url;
+        QString dbName;
+        QString login;
+        QString pass;
+    };
+
+    SConnectionData FillConnectionData()
+    {
+        SConnectionData data;
+        memset(&data, 0, sizeof(data));
+
+        SQStingConnectionData qData;
+        QString target = QString("tcp:postgresql://%1:5432/%2").arg(qData.url).arg(qData.dbName);
+        strcpy(&data.target[0], target.toStdString().c_str());
+        strcpy(&data.user[0], qData.login.toStdString().c_str());
+        strcpy(&data.password[0], qData.pass.toStdString().c_str());
+        return data;
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
 // PostgreSQL implementation
 //////////////////////////////////////////////////////////////////////////
 class PostgreSQLdb : public Database
@@ -24,12 +57,6 @@ public:
     //////////////////////////////////////////////////////////////////////////
     PostgreSQLdb() : m_connection(nullptr)
     {
-        QSettings settings(confName, QSettings::IniFormat, Q_NULLPTR);
-        url = settings.value(URL_KEY).toString();
-        dbName = settings.value(DB_KEY).toString();
-        login = settings.value(LOGIN_KEY).toString();
-        pass = settings.value(PWD_KEY).toString();
-
         open();
     }
 
@@ -45,10 +72,12 @@ public:
         bool status = false;
         try
         {
-            std::ostringstream ss;
-            ss << "user=" << login.toStdString() << " password =" << pass.toStdString() << " dbname=" << dbName.toStdString() << " host=" << url.toStdString();
+            SQStingConnectionData qData;
 
-            if (url.isEmpty() || dbName.isEmpty() || login.isEmpty() || pass.isEmpty())
+            std::ostringstream ss;
+            ss << "user=" << qData.login.toStdString() << " password =" << qData.pass.toStdString() << " dbname=" << qData.dbName.toStdString() << " host=" << qData.url.toStdString();
+
+            if (qData.url.isEmpty() || qData.dbName.isEmpty() || qData.login.isEmpty() || qData.pass.isEmpty())
             {
                 throw std::runtime_error("Incorrect connection info: " + ss.str());
             }
@@ -97,22 +126,17 @@ public:
     virtual bool checkDbStructure() override
     {
         bool status = false;
+        SConnectionData conn = FillConnectionData();
 
-//  https://postgrespro.ru/docs/postgresql/9.6/ecpg
-//  https://postgrespro.ru/docs/postgresql/9.6/catalog-pg-class.html
-        int check = IsEntityExists("S", "revisionSec");
-        check = IsEntityExists("r", "version");
+        int check = IsEntityExists(&conn, "S", "revision");
+        check = IsEntityExists(&conn, "r", "version");
+        check = IsEntityExists(&conn, "r", "version2");
 
         return status;
     }
 
 private:
     PGconn * m_connection;
-    QSettings settings;
-    QString url;
-    QString dbName;
-    QString login;
-    QString pass;
 };
 
 //////////////////////////////////////////////////////////////////////////

@@ -1,16 +1,39 @@
 // Check and create DB structure
+//  https://postgrespro.ru/docs/postgresql/9.6/ecpg
+//  https://postgrespro.ru/docs/postgresql/9.6/catalog-pg-class.html
 
-int IsEntityExists(const char * kind, const char * name)
+#include "CheckDbStructure.h"
+
+int IsEntityExists(SConnectionData* connData, const char * kind, const char * name)
 {
     EXEC SQL BEGIN DECLARE SECTION;
+    const char *target = connData->target;
+    const char *user = connData->user;
+    const char *passwd = connData->password;
+
     const char * rel_name = name;
     const char * rel_kind = kind;
     int result = 0;
     EXEC SQL END DECLARE SECTION;
 
+    /* set error handling */
+    EXEC SQL WHENEVER SQLERROR  GOTO quit;
+
+    /* set connection */
+    EXEC SQL CONNECT TO :target USER :user USING :passwd;
+
+    /* check entity exists */
     EXEC SQL PREPARE stmt FROM "SELECT count(*) FROM pg_catalog.pg_class WHERE relkind = ? AND relname = ? AND pg_catalog.pg_table_is_visible(oid)";
     EXEC SQL EXECUTE stmt INTO :result USING :rel_kind, :rel_name;
     EXEC SQL DEALLOCATE PREPARE stmt;
 
-    return result;
+    /* disconnection */
+    EXEC SQL DISCONNECT;
+
+quit:
+
+    if (result == 0)
+        return ECPG_NOT_FOUND;
+
+    return sqlca.sqlcode;
 }
